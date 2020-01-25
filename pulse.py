@@ -149,7 +149,8 @@ if active_incidents:
         latitude = float(incident.get('Latitude'))
         longitude = float(incident.get('Longitude'))
 
-        if (latitude <= 79.97083333 and latitude >= 79.94583333 and longitude >= 40.42777778 and longitude <= 40.45000000):
+        incident_in_oakland = latitude >= 40.42777778 and latitude <= 40.45000000 and longitude >= -79.97083333 and longitude <= -79.94583333
+        if (incident_in_oakland):
             incident_type = INCIDENT_TYPES[incident.get("PulsePointIncidentCallType")]
             utc_time = timezone('UTC').localize(datetime.strptime(incident.get("CallReceivedDateTime"), DATE_FORMAT))
             local_time = utc_time.astimezone(timezone('US/Eastern'))
