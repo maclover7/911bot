@@ -1,8 +1,7 @@
 import base64
 import hashlib
 import json
-import urllib
-import urllib2
+from urllib import request, parse
 import os
 from datetime import datetime
 from pytz import timezone
@@ -110,12 +109,12 @@ INCIDENT_TYPES = {
 }
 TOKEN = "tombrady5rings"
 
-req = urllib2.Request("https://web.pulsepoint.org/DB/giba.php?agency_id=EMS1110")
-response = urllib2.urlopen(req)
+req = request.Request("https://web.pulsepoint.org/DB/giba.php?agency_id=EMS1110")
+response = request.urlopen(req)
 data = json.loads(response.read())
 
 ct = base64.b64decode(data.get("ct"))
-iv = data.get("iv").decode('hex')
+iv = bytes.fromhex(data.get("iv"))
 salt = bytearray.fromhex(data.get("s"))
 
 # Calculate a key from the password
@@ -147,8 +146,8 @@ active_incidents = data.get("incidents", {}).get("active", {})
 
 if active_incidents:
     for incident in active_incidents:
-        latitude = incident.get('Latitude')
-        longitude = incident.get('Longitude')
+        latitude = float(incident.get('Latitude'))
+        longitude = float(incident.get('Longitude'))
 
         if (latitude <= 79.97083333 and latitude >= 79.94583333 and longitude >= 40.42777778 and longitude <= 40.45000000):
             incident_type = INCIDENT_TYPES[incident.get("PulsePointIncidentCallType")]
@@ -165,9 +164,9 @@ if active_incidents:
                 'text': "%s @ %s" % (incident_type, location),
                 'username': "911bot"
             }
+            data = json.dumps(data)
+            data = str(data)
+            data = data.encode('utf-8')
 
-            req = urllib2.Request(
-                    os.environ['SLACK_WEBHOOK_URL'],
-                    json.dumps(data),
-                    { "Content-Type": "application/json" })
-            response = urllib2.urlopen(req)
+            req = request.Request(os.environ['SLACK_WEBHOOK_URL'], data=data)
+            resp = request.urlopen(req)
