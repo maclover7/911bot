@@ -14,13 +14,14 @@ for outage_group in data.get("OutageGroups", []):
         m = re.search("(\d+)", outage_group["LastUpdated"])
         time = datetime.utcfromtimestamp(int(m.group(0)) / 1000).strftime("%I:%M %p")
 
-        data = {
-            'text': "As of %s, there are %i Duquesne Light customers without power in 15213." % (time, affected),
-            'username': "lightbot"
-        }
-        data = json.dumps(data)
-        data = str(data)
-        data = data.encode('utf-8')
+        if affected > 50:
+            data = {
+                'text': "As of %s, there are %i Duquesne Light customers without power in 15213." % (time, affected),
+                'username': "lightbot"
+            }
+            data = json.dumps(data)
+            data = str(data)
+            data = data.encode('utf-8')
 
-        req = request.Request(os.environ['SLACK_WEBHOOK_URL'], data=data)
-        resp = request.urlopen(req)
+            req = request.Request(os.environ['SLACK_WEBHOOK_URL'], data=data)
+            resp = request.urlopen(req)
